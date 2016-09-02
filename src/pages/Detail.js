@@ -14,50 +14,25 @@ class Detail extends React.Component {
     }
 
     componentWillMount() {
-        ajax.get('https://api.github.com/repos/facebook/react/commits')
-            .end((error, response) => {
-                if (!error && response) {
-                    console.dir(response.body);
-                    this.setState({ commits: response.body });
-                } else {
-                    console.log('There was an error fetching commits from GibHub', error);
-                }
-            }
-        );
+        this.fetchFeed('commits');
+        this.fetchFeed('forks');
+        this.fetchFeed('pulls');
+    }
 
-        ajax.get('https://api.github.com/repos/facebook/react/forks')
-            .end((error, response) => {
+    fetchFeed(type) {
+        ajax.get(`https://api.github.com/repos/facebook/react/${type}`).
+            end((error, response) => {
                 if (!error && response) {
-                    console.dir(response.body);
-                    this.setState({ forks: response.body });
+                    this.setState({ [type]: response.body });
                 } else {
-                    console.log('There was an error fetching forks from GibHub', error);
-                }
-            }
-        );
-
-        ajax.get('https://api.github.com/repos/facebook/react/pulls')
-            .end((error, response) => {
-                if (!error && response) {
-                    console.dir(response.body);
-                    this.setState({ pulls: response.body });
-                } else {
-                    console.log('There was an error fetching pulls from GibHub', error);
+                    console.log(`Error fetching ${type}`, error);
                 }
             }
         );
     }
 
-    showCommits() {
-        this.setState({ mode: 'commits' });
-    }
-
-    showForks() {
-        this.setState({ mode: 'forks' });
-    }
-
-    showPulls() {
-        this.setState({ mode: 'pulls' });
+    selectMode(mode) {
+        this.setState({ mode });
     }
 
     render() {
@@ -73,20 +48,17 @@ class Detail extends React.Component {
 
         return(
             <div>
-                <button onClick={this.showCommits.bind(this)}>Show Commits</button>
-                <button onClick={this.showForks.bind(this)}>Show Forks</button>
-                <button onClick={this.showPulls.bind(this)}>Show Pulls</button>
+                <button onClick={this.selectMode.bind(this, 'commits')}>Show Commits</button>
+                <button onClick={this.selectMode.bind(this, 'forks')}>Show Forks</button>
+                <button onClick={this.selectMode.bind(this, 'pulls')}>Show Pulls</button>
                 {content}
             </div>
         )
     }
 
     renderCommits() {
-        console.log("inside renderCommits method");
-
         return (<div>
         {this.state.commits.map((commit, index) => {
-            console.log("commit = ", commit);
             const author = commit.author ? commit.author.login : 'Anonymous';
 
             return (<p key={index}>
